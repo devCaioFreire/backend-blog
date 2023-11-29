@@ -3,6 +3,7 @@ import userService from "../services/user.service";
 import { prisma } from "../prisma";
 import { IUser } from "../models/user.model";
 import bcrypt from 'bcrypt';
+import { sign } from "jsonwebtoken";
 
 export class userController {
   async Register(req: Request, res: Response) {
@@ -25,7 +26,9 @@ export class userController {
       const passwordMatch = await bcrypt.compare(password, user.password!);
 
       if (passwordMatch) {
-        res.json({ user });
+        const token = sign({ id: user.id, email: user.email }, process.env.JWT_TOKEN, { expiresIn: '24h' });
+        res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+        res.json({ user })
       } else {
         console.log('Senha incorreta');
         res.status(401).json({ error: 'Senha incorreta' });
@@ -33,7 +36,7 @@ export class userController {
 
     } catch (error) {
       console.log(error);
-      throw new Error();
+      res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 }
