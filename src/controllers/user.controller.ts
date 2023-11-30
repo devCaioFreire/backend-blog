@@ -28,7 +28,7 @@ export class userController {
       if (passwordMatch) {
         const token = sign({ id: user.id, email: user.email }, process.env.JWT_TOKEN, { expiresIn: '24h' });
         res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
-        res.json({ user })
+        res.json({ user, token })
       } else {
         console.log('Senha incorreta');
         res.status(401).json({ error: 'Senha incorreta' });
