@@ -26,7 +26,7 @@ export class userController {
       const passwordMatch = await bcrypt.compare(password, user.password!);
 
       if (passwordMatch) {
-        const token = sign({ id: user.id, email: user.email }, process.env.JWT_TOKEN, { expiresIn: '24h' });
+        const token = sign({ id: user.id, name: user.name, email: user.email }, process.env.JWT_TOKEN, { expiresIn: '24h' });
         res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
         res.json({ user, token })
       } else {

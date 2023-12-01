@@ -8,10 +8,11 @@
 // }
 
 export interface IPost {
-  title: string;
-  body: string;
-  image: string;
-  date: Date;
   id: string,
+  title: string;
+  summary: string;
+  content: string;
+  image: string[];
+  date: Date;
   authorID: string,
 }
