@@ -6,12 +6,21 @@ export default class postService {
     try {
       const publish = await prisma.post.create({
         data: {
-          ...post,
+          title: post.title,
+          summary: post.summary,
+          image: post.image,
+          content: post.content,
+          author: {
+            connect: {
+              id: post.authorID
+            }
+          },
           date: new Date(),
         }
       });
 
-      console.log(post)
+      console.log("Creating post with data:", post);
+
       return publish;
     } catch (error) {
       console.error("Error creating post:", error);
@@ -19,12 +28,26 @@ export default class postService {
     }
   };
 
-  async Read() {
-
+  async Read(post: IPost) {
+    try {
+      const post = await prisma.post.findMany();
+      return post;
+    } catch (error) {
+      console.log(error);
+      throw new Error()
+    }
   };
 
-  async ReadByID() {
-
+  async ReadByID(postID: string) {
+    try {
+      const post = await prisma.post.findUnique({
+        where: { id: postID }
+      });
+      return post;
+    } catch (error) {
+      console.log(error);
+      throw new Error("Failed to retrieve post by ID.");
+    }
   };
 
   async Update() {
