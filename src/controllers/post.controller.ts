@@ -1,12 +1,17 @@
 import { Request, Response } from "express";
 import { IPost } from '../models/post.model'
 import postService from "../services/post.service";
+import multer from "multer";
 
 export default class postController {
 
   // Publish Post
   async Publish(req: Request, res: Response) {
-    const post: IPost = { ...req.body }
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image is required' });
+    }
+
+    const post: IPost = { ...req.body, image: req.file.buffer.toString('base64') }
     const Service = new postService();
     const published = await Service.Create(post);
     res.status(201).json(published);

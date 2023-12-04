@@ -20,7 +20,7 @@ model Post {
   title    String
   summary  String
   content  String
-  image    String[]
+  image    String
   date     DateTime
   authorID String   @db.ObjectId
   author   User     @relation(fields: [authorID], references: [id])
