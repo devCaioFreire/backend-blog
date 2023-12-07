@@ -7,15 +7,47 @@ export default class postController {
 
   // Publish Post
   async Publish(req: Request, res: Response) {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Image is required' });
-    }
+    try {
+      // Check if an image file is uploaded
+      if (!req.file) {
+        return res.status(400).json({ error: 'Image is required' });
+      }
 
-    const post: IPost = { ...req.body, image: req.file.buffer.toString('base64') }
-    const Service = new postService();
-    const published = await Service.Create(post);
-    res.status(201).json(published);
-  };
+      // Extract necessary data from the request
+      const { title, summary, content, authorID } = req.body;
+
+      // Create post using the service
+      const Service = new postService();
+      const published = await Service.Create({
+        title, summary, content, authorID,
+        id: "",
+        image: "",
+        date: new Date()
+      }, req);
+
+      // Send a response back to the client
+      res.status(201).json({
+        message: 'Post created successfully',
+        // Include any additional data you want to send back
+        published,
+      });
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      res.status(500).json({ error: 'Failed to create post' });
+    }
+  }
+  // async Publish(req: Request, res: Response) {
+  //   if (!req.file) {
+  //     return res.status(400).json({ error: 'Image is required' });
+  //   }
+  //   console.log(req.files)
+  //   console.log(req.file)
+
+  //   const post: IPost = { ...req.body }
+  //   const Service = new postService();
+  //   const published = await Service.Create(post);
+  //   res.status(201).json(published);
+  // };
 
   // All Posts
   async Post(req: Request, res: Response) {
