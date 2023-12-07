@@ -8,28 +8,33 @@ export default class postController {
   // Publish Post
   async Publish(req: Request, res: Response) {
     try {
-      // Check if an image file is uploaded
+      const Service = new postService();
+
       if (!req.file) {
         return res.status(400).json({ error: 'Image is required' });
       }
 
       // Extract necessary data from the request
       const { title, summary, content, authorID } = req.body;
-
+      const image = req.file ? req.file.path : undefined;
+      
       // Create post using the service
-      const Service = new postService();
       const published = await Service.Create({
-        title, summary, content, authorID,
         id: "",
-        image: "",
+        title,
+        summary,
+        content,
+        authorID,
+        image,
         date: new Date()
       }, req);
 
-      // Send a response back to the client
+      // Inclua a URL ou identificador único no retorno
+      const imageUrl = `/uploads/${published.id}/image`; // Modifique conforme necessário
       res.status(201).json({
         message: 'Post created successfully',
-        // Include any additional data you want to send back
-        published,
+        published: { ...published, imageUrl },
+        imageUrl, // Adiciona a URL da imagem no retorno
       });
     } catch (error) {
       console.error('Error publishing post:', error);

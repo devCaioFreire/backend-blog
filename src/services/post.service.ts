@@ -1,15 +1,22 @@
 import { IPost } from "models/post.model";
 import { prisma } from "../prisma";
 import { Request } from "express";
+import fs from 'fs';
 
 export default class postService {
   async Create(post: IPost, req: Request) {
     try {
+      const imageBuffer = fs.readFileSync(req.file.path);
+      const imageBase64 = imageBuffer.toString('base64');
+
+      // Remover o arquivo temporário após a leitura
+      fs.unlinkSync(req.file.path);
+
       const publish = await prisma.post.create({
         data: {
           title: post.title,
           summary: post.summary,
-          image: `/uploads/${req.file.filename}`, // Assuming 'filename' is the property with the uploaded file name
+          image: imageBase64,
           content: post.content,
           author: {
             connect: {
