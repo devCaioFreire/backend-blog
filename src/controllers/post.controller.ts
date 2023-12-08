@@ -14,11 +14,9 @@ export default class postController {
         return res.status(400).json({ error: 'Image is required' });
       }
 
-      // Extract necessary data from the request
       const { title, summary, content, authorID } = req.body;
       const image = req.file ? req.file.path : undefined;
-      
-      // Create post using the service
+
       const published = await Service.Create({
         id: "",
         title,
@@ -29,30 +27,15 @@ export default class postController {
         date: new Date()
       }, req);
 
-      // Inclua a URL ou identificador único no retorno
-      const imageUrl = `/uploads/${published.id}/image`; // Modifique conforme necessário
       res.status(201).json({
         message: 'Post created successfully',
-        published: { ...published, imageUrl },
-        imageUrl, // Adiciona a URL da imagem no retorno
+        published: { ...published },
       });
     } catch (error) {
       console.error('Error publishing post:', error);
       res.status(500).json({ error: 'Failed to create post' });
     }
   }
-  // async Publish(req: Request, res: Response) {
-  //   if (!req.file) {
-  //     return res.status(400).json({ error: 'Image is required' });
-  //   }
-  //   console.log(req.files)
-  //   console.log(req.file)
-
-  //   const post: IPost = { ...req.body }
-  //   const Service = new postService();
-  //   const published = await Service.Create(post);
-  //   res.status(201).json(published);
-  // };
 
   // All Posts
   async Post(req: Request, res: Response) {
@@ -78,5 +61,26 @@ export default class postController {
     }
 
     res.status(200).json(getPost)
+  }
+
+  // Edit Post
+  async PostPut(req: Request, res: Response) {
+
+    const post: Partial<IPost> = { ...req.body }
+
+    const Service = new postService();
+    const edit = await Service.Update(post);
+
+    res.status(200).json(edit);
+  }
+
+  // Post Delete
+  async PostDelete(req: Request, res: Response) {
+    const { id } = req.body;
+
+    const Service = new postService();
+    const deleted = await Service.Delete(id);
+
+    res.status(200).json({sucess:"Post Deletado Com Sucesso"});
   }
 }

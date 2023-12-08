@@ -12,4 +12,3 @@ const storage = multer.diskStorage({
 })
 
 export const uploadMiddleware = multer({ storage })
-// export const uploadMiddleware = multer({ dest: 'uploads/' })

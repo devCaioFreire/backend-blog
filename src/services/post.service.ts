@@ -9,7 +9,6 @@ export default class postService {
       const imageBuffer = fs.readFileSync(req.file.path);
       const imageBase64 = imageBuffer.toString('base64');
 
-      // Remover o arquivo temporário após a leitura
       fs.unlinkSync(req.file.path);
 
       const publish = await prisma.post.create({
@@ -32,37 +31,72 @@ export default class postService {
       return publish;
     } catch (error) {
       console.error("Error creating post:", error);
-      throw new Error("Failed to create post.");
     }
   };
 
   async Read(post: IPost) {
     try {
-      const post = await prisma.post.findMany();
-      return post;
+      const post = await prisma.post.findMany({ include: { author: true } });
+
+      const postsWithAuthorNames = post.map((p) => {
+        const { author, ...posts } = p;
+        return {
+          ...posts,
+          author: author.name
+        };
+      });
+
+      return postsWithAuthorNames;
     } catch (error) {
       console.log(error);
-      throw new Error()
     }
   };
 
   async ReadByID(postID: string) {
     try {
       const post = await prisma.post.findUnique({
-        where: { id: postID }
+        where: { id: postID },
+        include: { author: true }
       });
-      return post;
+
+      const { author, ...data } = post;
+      const reponse = { ...data, author: author.name }
+
+      return reponse;
     } catch (error) {
       console.log(error);
-      throw new Error("Failed to retrieve post by ID.");
     }
   };
 
-  async Update() {
-
+  async Update(post: Partial<IPost>) {
+    try {
+      if (!post.id) {
+        throw new Error('This ID is not valid')
+      }
+      const postUpdated = await prisma.post.update({ where: { id: post.id }, data: post });
+      return postUpdated;
+    } catch (error) {
+      console.log(error)
+    }
   };
 
-  async Delete() {
+  async Delete(id: string) {
+    try {
+      if (!id) {
+        throw new Error()
+      }
 
+      const post = await prisma.post.findUnique({ where: { id } });
+
+      if (!post) {
+        throw new Error('Post not found');
+      }
+
+      const deleted = prisma.post.delete({ where: { id } });
+
+      return deleted;
+    } catch (error) {
+      console.log(error);
+    }
   };
 } 
