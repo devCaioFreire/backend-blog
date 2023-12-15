@@ -5,6 +5,7 @@ import { router } from './routes/router';
 
 const app = express();
 app.use(express.json());
+
 app.use(cors());
 app.use(router);
 
@@ -22,6 +23,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-app.listen(8080, () => {
-  console.log('Server is running on port 8080');
+app.listen(8099, () => {
+  console.log('Server is running on port 8099');
 });
