@@ -70,7 +70,7 @@ export default class postController {
     const { title, summary, content } = req.body;
     const image = req.file ? req.file.path : undefined;
 
-    const formData: Partial<IPost> = { image, title, summary, content }
+    const formData: Partial<IPost> = { id:id ,image:image, title:title, summary:summary, content:content }
     console.log(formData);
     const Service = new postService();
     const edit = await Service.Update(formData);

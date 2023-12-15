@@ -7,21 +7,19 @@ datasource db {
   url      = env("MONGODB_URI")
 }
 
+model Post {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorID String   @db.ObjectId
+  content  String
+  date     DateTime @db.Date
+  image    String
+  summary  String
+  title    String
+}
+
 model User {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   email    String @unique
-  password String
   name     String
-  posts    Post[]
-}
-
-model Post {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  title    String
-  summary  String
-  content  String
-  image    String?
-  date     DateTime
-  authorID String   @db.ObjectId
-  author   User     @relation(fields: [authorID], references: [id])
+  password String
 }
