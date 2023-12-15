@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { IPost } from '../models/post.model'
 import postService from "../services/post.service";
+import fs from 'fs';
 import multer from "multer";
 
 export default class postController {
@@ -68,9 +69,11 @@ export default class postController {
     const id =  req.params.id ;
     if(!id){ throw new Error("Post ID is required")}
     const { title, summary, content } = req.body;
-    const image = req.file ? req.file.path : undefined;
+    const imageBuffer = fs.readFileSync(req.file ? req.file.path : undefined);
+    const imageBase64 = imageBuffer.toString('base64');
 
-    const formData: Partial<IPost> = { id:id ,image:image, title:title, summary:summary, content:content }
+    const formData: Partial<IPost> = { id:id ,image:imageBase64, title:title, summary:summary, content:content }
+    
     console.log(formData);
     const Service = new postService();
     const edit = await Service.Update(formData);
