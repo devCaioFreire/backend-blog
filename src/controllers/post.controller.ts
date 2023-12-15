@@ -65,7 +65,8 @@ export default class postController {
 
   // Edit Post
   async PostPut(req: Request, res: Response) {
-    const id = { ...req.params };
+    const id =  req.params.id ;
+    if(!id){ throw new Error("Post ID is required")}
     const { title, summary, content } = req.body;
     const image = req.file ? req.file.path : undefined;
 
