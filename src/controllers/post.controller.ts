@@ -66,14 +66,26 @@ export default class postController {
 
   // Edit Post
   async PostPut(req: Request, res: Response) {
-    const id =  req.params.id ;
-    if(!id){ throw new Error("Post ID is required")}
-    const { title, summary, content } = req.body;
-    const imageBuffer = fs.readFileSync(req.file ? req.file.path : undefined);
-    const imageBase64 = imageBuffer.toString('base64');
+    const id = req.params.id;
 
-    const formData: Partial<IPost> = { id:id ,image:imageBase64, title:title, summary:summary, content:content }
+    if (!id) {
+      throw new Error("Post ID is required")
+    }
+
+    const PostToUpdate: Partial<IPost> = { ...req.body };
+
+    let imageBase64;
+
+    if (req.file) {
+      const imageBuffer = fs.readFileSync(req.file.path);
+      imageBase64 = imageBuffer.toString('base64');
+    }
+
+    PostToUpdate.id = id;
+    imageBase64 != undefined ? PostToUpdate.image = imageBase64 : undefined;
     
+    const formData: Partial<IPost> = { ...PostToUpdate }
+
     console.log(formData);
     const Service = new postService();
     const edit = await Service.Update(formData);
