@@ -65,11 +65,14 @@ export default class postController {
 
   // Edit Post
   async PostPut(req: Request, res: Response) {
+    const id = { ...req.params };
+    const { title, summary, content } = req.body;
+    const image = req.file ? req.file.path : undefined;
 
-    const post: Partial<IPost> = { ...req.body }
-
+    const formData: Partial<IPost> = { image, title, summary, content }
+    console.log(formData);
     const Service = new postService();
-    const edit = await Service.Update(post);
+    const edit = await Service.Update(formData);
 
     res.status(200).json(edit);
   }
@@ -81,6 +84,6 @@ export default class postController {
     const Service = new postService();
     const deleted = await Service.Delete(id);
 
-    res.status(200).json({sucess:"Post Deletado Com Sucesso"});
+    res.status(200).json({ sucess: "Post Deletado Com Sucesso" });
   }
 }
