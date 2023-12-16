@@ -83,7 +83,7 @@ export default class postController {
 
     PostToUpdate.id = id;
     imageBase64 != undefined ? PostToUpdate.image = imageBase64 : undefined;
-    
+
     const formData: Partial<IPost> = { ...PostToUpdate }
 
     console.log(formData);
@@ -95,11 +95,11 @@ export default class postController {
 
   // Post Delete
   async PostDelete(req: Request, res: Response) {
-    const { id } = req.body;
+    const { id } = req.params;
 
     const Service = new postService();
     const deleted = await Service.Delete(id);
 
-    res.status(200).json({ sucess: "Post Deletado Com Sucesso" });
+    res.status(200).json(deleted);
   }
 }

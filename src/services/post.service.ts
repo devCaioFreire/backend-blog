@@ -70,10 +70,22 @@ export default class postService {
 
   async Update(post: Partial<IPost>) {
     try {
+
       if (!post.id) {
         throw new Error('This ID is not valid')
       }
-      const postUpdated = await prisma.post.updateMany({ where: { id:post.id}, data: {image:post.image, title:post.title, summary:post.summary, content:post.content} });
+
+      const postUpdated = await prisma.post.updateMany(
+        {
+          where: { id: post.id },
+          data: {
+            title: post.title,
+            summary: post.summary,
+            image: post.image,
+            content: post.content
+          }
+        });
+
       return postUpdated;
     } catch (error) {
       console.log(error)
