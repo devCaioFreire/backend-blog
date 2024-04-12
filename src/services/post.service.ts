@@ -17,11 +17,7 @@ export default class postService {
           summary: post.summary,
           image: imageBase64,
           content: post.content,
-          author: {
-            connect: {
-              id: post.authorID,
-            },
-          },
+          authorID: post.authorID,
           date: new Date(),
         },
       });
@@ -36,17 +32,13 @@ export default class postService {
 
   async Read(post: IPost) {
     try {
-      const post = await prisma.post.findMany({ include: { author: true } });
-
-      const postsWithAuthorNames = post.map((p) => {
-        const { author, ...posts } = p;
-        return {
-          ...posts,
-          author: author.name
-        };
+      const posts = await prisma.post.findMany({
+        include: {
+          author:
+            { select: { name: true } }
+        }
       });
-
-      return postsWithAuthorNames;
+      return posts;
     } catch (error) {
       console.log(error);
     }
@@ -56,13 +48,13 @@ export default class postService {
     try {
       const post = await prisma.post.findUnique({
         where: { id: postID },
-        include: { author: true }
+        include: {
+          author:
+            { select: { name: true } }
+        }
       });
 
-      const { author, ...data } = post;
-      const reponse = { ...data, author: author.name }
-
-      return reponse;
+      return post;
     } catch (error) {
       console.log(error);
     }
@@ -70,7 +62,6 @@ export default class postService {
 
   async Update(post: Partial<IPost>) {
     try {
-
       if (!post.id) {
         throw new Error('This ID is not valid')
       }

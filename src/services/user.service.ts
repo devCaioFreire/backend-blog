@@ -19,7 +19,7 @@ export default class userService {
     } catch (error) {
       console.log('Erro:', error);
     }
-  }
+  };
 
   async Read() {
     try {
@@ -28,7 +28,7 @@ export default class userService {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   async ReadByID(idUser: string) {
     try {
@@ -38,9 +38,22 @@ export default class userService {
       const user = await prisma.user.findFirstOrThrow({ where: { id: idUser } });
       return user;
     } catch (error) { }
-  }
+  };
 
-  async Update() { }
+  async Update() { };
+
+  async RecoveryPost(email: string) {
+    const user = prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      console.log("This user is not found");
+      throw new Error();
+    };
+
+    return user;
+  };
 
   async Delete() { }
 }

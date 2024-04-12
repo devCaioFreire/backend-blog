@@ -2,11 +2,9 @@ import { Request, Response } from "express";
 import { IPost } from '../models/post.model'
 import postService from "../services/post.service";
 import fs from 'fs';
-import multer from "multer";
 
 export default class postController {
 
-  // Publish Post
   async Publish(req: Request, res: Response) {
     try {
       const Service = new postService();
@@ -36,17 +34,15 @@ export default class postController {
       console.error('Error publishing post:', error);
       res.status(500).json({ error: 'Failed to create post' });
     }
-  }
+  };
 
-  // All Posts
   async Post(req: Request, res: Response) {
     const post: IPost = { ...req.body };
     const Service = new postService();
     const getPosts = await Service.Read(post);
     res.status(200).json(getPosts)
-  }
+  };
 
-  // Post by ID
   async PostByID(req: Request, res: Response) {
     const { id } = req.params;
 
@@ -62,9 +58,8 @@ export default class postController {
     }
 
     res.status(200).json(getPost)
-  }
+  };
 
-  // Edit Post
   async PostPut(req: Request, res: Response) {
     const id = req.params.id;
 
@@ -91,9 +86,8 @@ export default class postController {
     const edit = await Service.Update(formData);
 
     res.status(200).json(edit);
-  }
+  };
 
-  // Post Delete
   async PostDelete(req: Request, res: Response) {
     const { id } = req.params;
 
@@ -101,5 +95,5 @@ export default class postController {
     const deleted = await Service.Delete(id);
 
     res.status(200).json(deleted);
-  }
+  };
 }

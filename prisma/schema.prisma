@@ -15,6 +15,7 @@ model Post {
   image    String
   summary  String
   title    String
+  author   User     @relation(fields: [authorID], references: [id])
 }
 
 model User {
@@ -22,4 +23,5 @@ model User {
   email    String @unique
   name     String
   password String
+  posts    Post[]
 }
