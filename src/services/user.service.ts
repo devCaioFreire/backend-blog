@@ -42,7 +42,7 @@ export default class userService {
 
   async Update() { };
 
-  async RecoveryPost(email: string) {
+  async RecoveryPassword(email: string) {
     const user = prisma.user.findUnique({
       where: { email }
     });
@@ -53,6 +53,12 @@ export default class userService {
     };
 
     return user;
+  };
+
+  async ChangePassword(email: string) {
+    const user = prisma.user.findUnique({
+      where: { email }
+    })
   };
 
   async Delete() { }

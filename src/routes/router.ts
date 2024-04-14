@@ -20,7 +20,8 @@ router.put('/Edit/:id', uploadMiddleware.single('image'), new postController().P
 
 // RECOVERY
 router.post('/Recovery', new userController().RecoveryPassword);
-router.post('/RecoveryCode', new userController().ChangePassword);
+router.post('/RecoveryCode', new userController().ConfirmCode);
+router.post('/ChangePassword', new userController().ChangePassword);
 
 // DELETE
 router.delete('/Delete/:id', new postController().PostDelete);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import { router } from './routes/router';
@@ -6,10 +5,18 @@ import { router } from './routes/router';
 const app = express();
 app.use(express.json());
 
-app.use(cors());
+const corsOptions = {
+  origin: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'Set-Cookie', 'Cookie',
+    'Access-Control-Allow-Credentials', 'X-Requested-With'
+  ],
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(router);
 
-// Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof Error) {
     return res.status(400).json({
