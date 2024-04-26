@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node dist/app.js",
-    "build": "tsup src",
+    "build": "tsc",
     "dev": "nodemon src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
