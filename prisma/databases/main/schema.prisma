@@ -1,0 +1,37 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./databases/main"
+  previewFeatures = ["views"]
+  binaryTargets   = ["native", "debian-openssl-1.1.x", "rhel-openssl-1.0.x"]
+}
+
+// generator client {
+//   provider        = "prisma-client-js"
+//   output          = "./databases/main"
+//   previewFeatures = ["views"]
+//   binaryTargets   = ["native", "debian-openssl-1.1.x", "rhel-openssl-1.0.x"]
+// }
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model Post {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  authorID String   @db.ObjectId
+  content  String
+  date     DateTime @db.Date
+  image    String
+  summary  String
+  title    String
+  author   User     @relation(fields: [authorID], references: [id])
+}
+
+model User {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  email    String @unique
+  name     String
+  password String
+  posts    Post[]
+}

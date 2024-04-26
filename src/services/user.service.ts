@@ -55,10 +55,22 @@ export default class userService {
     return user;
   };
 
-  async ChangePassword(email: string) {
+  async ChangePassword(email: string, password: string) {
     const user = prisma.user.findUnique({
       where: { email }
     })
+
+    if (!user) {
+      console.log("This user is not found");
+      throw new Error();
+    };
+
+    const updatePassword = prisma.user.update({
+      where: { email },
+      data: { password }
+    });
+
+    return updatePassword;
   };
 
   async Delete() { }

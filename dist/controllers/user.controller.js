@@ -1,116 +1,115 @@
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/controllers/user.controller.ts
-var user_controller_exports = {};
-__export(user_controller_exports, {
-  userController: () => userController
-});
-module.exports = __toCommonJS(user_controller_exports);
-
-// src/prisma.ts
-var import_client = require("@prisma/client");
-var prisma = new import_client.PrismaClient();
-
-// src/services/user.service.ts
-var import_bcrypt = require("bcrypt");
-var userService = class {
-  async Create(user) {
-    try {
-      console.log(user);
-      const emailJaECadastrado = await prisma.user.findFirst({ where: { email: user.email } });
-      if (emailJaECadastrado) {
-        throw new Error("Email j\xE1 cadastrado");
-      }
-      user.password = await (0, import_bcrypt.hash)(user.password, 13);
-      const userCreated = await prisma.user.create({ data: user });
-      return userCreated;
-    } catch (error) {
-      console.log("Erro:", error);
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.userController = void 0;
+const jsonwebtoken_1 = require("jsonwebtoken");
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const user_service_1 = __importDefault(require("../services/user.service"));
+const prisma_1 = require("../prisma");
+const recovery_password_1 = require("../utils/recovery-password");
+const html_email_recovery_1 = require("../utils/html-email-recovery");
+const generate_otp_1 = require("../utils/generate-otp");
+class userController {
+    async Register(req, res) {
+        const user = { ...req.body };
+        const Service = new user_service_1.default();
+        const userRegistered = await Service.Create(user);
+        res.status(201).json(userRegistered);
     }
-  }
-  async Read() {
-    try {
-      const users = await prisma.user.findMany();
-      return users;
-    } catch (error) {
-      console.log(error);
+    ;
+    async Login(req, res) {
+        const { email, password } = req.body;
+        const user = await prisma_1.prisma.user.findFirst({ where: { email } });
+        try {
+            if (!user) {
+                console.log('User not found');
+            }
+            const passwordMatch = await bcrypt_1.default.compare(password, user.password);
+            if (passwordMatch) {
+                const token = (0, jsonwebtoken_1.sign)({ id: user.id, name: user.name, email: user.email }, process.env.JWT_TOKEN, { expiresIn: '24h' });
+                res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+                res.json({ user, token });
+            }
+            else {
+                console.log('Senha incorreta');
+                res.status(401).json({ error: 'Senha incorreta' });
+            }
+        }
+        catch (error) {
+            console.log(error);
+            res.status(500).json({ error: 'Erro interno do servidor' });
+        }
     }
-  }
-  async ReadByID(idUser) {
-    try {
-      if (parseInt(idUser) <= 0) {
-        throw new Error("ID do Usuario Invalido");
-      }
-      const user = await prisma.user.findFirstOrThrow({ where: { id: idUser } });
-      return user;
-    } catch (error) {
+    ;
+    async RecoveryPassword(req, res) {
+        try {
+            const { email } = req.body;
+            const verificationCode = (0, generate_otp_1.generateOTP)();
+            const cookie = email + "|" + verificationCode;
+            const hash = bcrypt_1.default.hashSync(cookie, 12);
+            const html = (0, html_email_recovery_1.HTML_RECOVERY_EMAIL)(Number(verificationCode));
+            const info = await recovery_password_1.transporter.sendMail({
+                from: `"Personal Assistent by Caio Freire" <${process.env.USER_FROM_MAIL}}>`,
+                to: email,
+                subject: "Recovery Password",
+                text: "Copy the code below and paste it into the blog to recover your password.",
+                html: html
+            });
+            const expires = new Date(new Date().getTime() + 24 * 60 * 1000);
+            res.cookie("code", hash, { expires, httpOnly: true, secure: true });
+            return res.json(info);
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
-  }
-  async Update() {
-  }
-  async Delete() {
-  }
-};
-
-// src/controllers/user.controller.ts
-var import_bcrypt2 = __toESM(require("bcrypt"));
-var import_jsonwebtoken = require("jsonwebtoken");
-var userController = class {
-  async Register(req, res) {
-    const user = { ...req.body };
-    const Service = new userService();
-    const userRegistered = await Service.Create(user);
-    res.status(201).json(userRegistered);
-  }
-  async Login(req, res) {
-    const { email, password } = req.body;
-    const user = await prisma.user.findFirst({ where: { email } });
-    try {
-      if (!user) {
-        console.log("User not found");
-      }
-      const passwordMatch = await import_bcrypt2.default.compare(password, user.password);
-      if (passwordMatch) {
-        const token = (0, import_jsonwebtoken.sign)({ id: user.id, name: user.name, email: user.email }, process.env.JWT_TOKEN, { expiresIn: "24h" });
-        res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1e3 });
-        res.json({ user, token });
-      } else {
-        console.log("Senha incorreta");
-        res.status(401).json({ error: "Senha incorreta" });
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+    ;
+    async ConfirmCode(req, res) {
+        try {
+            const { code } = req.body;
+            const header = req.headers.cookie;
+            const cookie = header ? header.split('code=')[1] : undefined;
+            if (!cookie) {
+                return res.status(401).json({ error: "Code not found in cookie" });
+            }
+            ;
+            const hashMatch = bcrypt_1.default.compare(String(code), cookie);
+            if (!hashMatch) {
+                return res.status(401).json({ error: "This code is not valid" });
+            }
+            ;
+            return res.status(200).json({ message: "Code is valid" });
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
-  }
-};
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  userController
-});
+    ;
+    async ChangePassword(req, res) {
+        try {
+            const { newPassword } = req.body;
+            const header = req.headers.cookie;
+            const cookie = header ? header.split('code=')[1] : undefined;
+            if (!cookie) {
+                return res.status(401).json({ error: "Cookie is not found" });
+            }
+            ;
+            const decryptedCookie = bcrypt_1.default.compare('', cookie);
+            if (!decryptedCookie) {
+                return res.status(401).json({ error: "Invalid cookie" });
+            }
+            const email = decryptedCookie.split("|");
+            const service = new user_service_1.default();
+            const data = await service.ChangePassword(email, newPassword);
+            return res.status(200).json(data);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    ;
+}
+exports.userController = userController;
+//# sourceMappingURL=user.controller.js.map

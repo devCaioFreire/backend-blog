@@ -47,7 +47,7 @@ export class userController {
     try {
       const { email }: { email: string } = req.body;
       const verificationCode = generateOTP();
-      const cookie = email + verificationCode;
+      const cookie = email + "|" + verificationCode;
       const hash = bcrypt.hashSync(cookie, 12);
       const html = HTML_RECOVERY_EMAIL(Number(verificationCode));
 
@@ -77,13 +77,13 @@ export class userController {
 
       if (!cookie) {
         return res.status(401).json({ error: "Code not found in cookie" });
-      }
+      };
 
       const hashMatch = bcrypt.compare(String(code), cookie);
 
       if (!hashMatch) {
         return res.status(401).json({ error: "This code is not valid" });
-      }
+      };
 
       return res.status(200).json({ message: "Code is valid" });
     } catch (error) {
@@ -92,7 +92,29 @@ export class userController {
   };
 
   async ChangePassword(req: Request, res: Response) {
-    const body = req.body;
-    const cookie = req.headers.cookie
+    try {
+      const { newPassword }: { newPassword: string } = req.body;
+      const header = req.headers.cookie;
+      const cookie = header ? header.split('code=')[1] : undefined;
+
+      if (!cookie) {
+        return res.status(401).json({ error: "Cookie is not found" });
+      };
+
+      const decryptedCookie: any = bcrypt.compare('', cookie);
+
+      if (!decryptedCookie) {
+        return res.status(401).json({ error: "Invalid cookie" });
+      }
+
+      const email = decryptedCookie.split("|");
+
+      const service = new userService();
+
+      const data = await service.ChangePassword(email, newPassword);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 }
